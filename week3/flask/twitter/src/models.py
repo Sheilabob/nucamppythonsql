@@ -17,6 +17,28 @@ class User(db.Model):
     tweets = db.relationship('Tweet', backref='user', cascade="all, delete")
 
 
+likes_table = db.Table(
+    'likes',
+    db.Column(
+        'user_id', db.Integer,
+        db.ForeignKey('users.id'),
+        primary_key=True
+    ),
+
+    db.Column(
+        'tweet_id', db.Integer,
+        db.ForeignKey('tweets.id'),
+        primary_key=True
+    ),
+
+    db.Column(
+        'created_at', db.DateTime,
+        default=datetime.datetime.utcnow,
+        nullable=False
+    )
+)
+
+
 class Tweet(db.Model):
     __tablename__ = 'tweets'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -27,29 +49,20 @@ class Tweet(db.Model):
         nullable=False
     )
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    likes_table = db.Table(
-        'likes',
-        db.Column(
-            'user_id', db.Integer,
-            db.ForeignKey('users.id'),
-            primary_key=True
-        ),
-
-        db.Column(
-            'tweet_id', db.Integer,
-            db.ForeignKey('tweets.id'),
-            primary_key=True
-        ),
-
-        db.Column(
-            'created_at', db.DateTime,
-            default=datetime.datetime.utcnow,
-            nullable=False
-        )
-    )
     liking_users = db.relationship(
         'User', secondary=likes_table,
         lazy='subquery',
         backref=db.backref('liked_tweets', lazy=True)
     )
+
+    def __init__(self, content: str, user_id: int):
+        self.content = content
+        self.user_id = user_id
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'created_at': self.created_at.isoformat(),
+            'user_id': self.user_id
+        }
