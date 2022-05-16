@@ -23,7 +23,7 @@ class Arch(db.Model):
                        unique=True, nullable=False, default=0)
     picture_id = db.Column(
         db.Integer, db.ForeignKey('pictures.id'), unique=True)
-    background_info = db.relationship(
+    arches_bginfo_table = db.relationship(
         'BackgroundInfo', backref='arch', cascade="all, delete")
 
     def __init__(self, gps_point_ew: int, gps_point_ns: int, size_gad: int, size_lad: int, name: str, rating: int, type: str, trail_id: int, map_id: int, picture_id: int):
@@ -101,8 +101,8 @@ class BackgroundInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     original_reporter = db.Column(db.String(128))
     references_sources = db.Column(db.String(256))
-    about_arches = db.relationship('Arch', secondary=arches_bginfo_table,
-                                   lazy='subquery', backref=db.backref('arches_about', lazy=True))
+    arches = db.relationship('Arch', secondary=arches_bginfo_table,
+                             lazy='subquery', backref=db.backref('background_info', lazy=True))
 
 
 class Picture(db.Model):
